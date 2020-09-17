@@ -1,22 +1,23 @@
-import sys, select
 import json 
 import time
 from datetime import datetime
 from datetime import timedelta 
 from threading import Thread
+
+current_time = int(datetime.now().strftime("%H"))
 class foodbooking:
+    inp=None
     def gettime(self):
-        
-        current_time = int(datetime.now().strftime("%H"))
         if(current_time < 6 or current_time >= 22 ):
             print("All restaruntus are closed")
+            time1='t0'
         elif(current_time < 12):
-            time='t1'
+            time1='t1'
         elif(current_time < 18):
-            time='t2'
+            time1='t2'
         elif(current_time < 22):
-            time='t3'
-        return time
+            time1='t3'
+        return time1
         
     def restarunt(self):
         
@@ -83,18 +84,22 @@ class foodbooking:
             order.append({food[i-1]:dish[time][food[i-1]]})
             sum =sum+amt
         print("\nToatl price %d\n"%(sum))
-        deliver=datetime.now() + timedelta(minutes=30)
+        deliver=datetime.now() + timedelta(minutes=1)
         return deliver
-        
-    def cancel(self,deliver):
-
-        if(datetime.now() > deliver):
-            print("Sorry Delivered")
-
+    def cancel(self):
+        foodbooking.inp = input("Do you want to Cancell the order if yes press any key : ")
+    def check(self):
+        t = Thread(target=self.cancel)
+        t.daemon = True  # Otherwise the thread won't be terminated when the main program terminates.
+        t.start()
+        t.join(timeout=5)
+        if self.inp is None:
+            print("\nDelivered..!")
+            print("\nPress Enter to Continue..!")
+            return 
         else:
-            print("Canclled")
-            return 0
-            
+            print("Canclled..!")
+
                 
 
 b=foodbooking()
@@ -104,14 +109,13 @@ while(x!=0):
     while(shop==None):
         shop=b.restarunt()
     timing=b.gettime()
+    if(timing == 't0'):
+        break
     dish=b.dish(shop,timing)
     deliver=b.order(timing,dish)
     while(deliver==None):
         deliver=b.order(timing,dish)
-    c=1
-    while(datetime.now() < deliver and c !=0):
-        input("Do you want to cancel if yes press any key : ")
-        c=b.cancel(deliver)
+    b.check()
     try:
         x=int(input("Do you want to order again 1-yes 0-no : "))
     except:
